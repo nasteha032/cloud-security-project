@@ -1,5 +1,5 @@
 // API Configuration
-const API_URL = 'http://localhost:5000';
+const API_URL = window.location.origin;
 let currentUser = null;
 
 // ========== AUTHENTICATION ==========
