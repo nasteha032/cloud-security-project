@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akıllı DMS | Giriş</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="logo-section">
+                <div class="logo-icon">📄</div>
+                <h1>Akıllı DMS</h1>
+                <p>Belge Yönetim Sistemi & Güvenlik İzleme</p>
+            </div>
+
+            <div class="security-badge">
+                <span>🔒 JWT | 🔐 AES-256 | ⚡ Anomali Tespiti</span>
+            </div>
+
+            <form id="authForm">
+                <div class="input-group">
+                    <label>E-posta Adresi</label>
+                    <input type="email" id="email" placeholder="ornek@kurum.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Şifre</label>
+                    <input type="password" id="password" placeholder="••••••" required>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-primary" onclick="handleLogin()">Giriş Yap</button>
+                    <button type="button" class="btn btn-secondary" onclick="handleRegister()">Kayıt Ol</button>
+                </div>
+
+                <div id="message" class="message"></div>
+            </form>
+
+            <div class="info-text">
+                <small>Demo: test@test.com / 123456</small>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

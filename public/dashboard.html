@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akıllı DMS | Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">📄 <span>Akıllı DMS</span></div>
+                <div class="security-status">
+                    <span class="status-dot active"></span>
+                    Güvenli Bağlantı
+                </div>
+            </div>
+
+            <div class="user-info">
+                <div class="user-avatar">👤</div>
+                <div class="user-details">
+                    <span id="userEmail" class="user-email">yükleniyor...</span>
+                    <span class="user-role">Kullanıcı</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <span>📁</span> Belgelerim
+                </a>
+                <a href="#" class="nav-item">
+                    <span>🛡️</span> Güvenlik
+                </a>
+            </nav>
+
+            <button onclick="logout()" class="logout-btn">Çıkış Yap</button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <h2>Belge Yönetim Paneli</h2>
+                <div class="header-stats">
+                    <div class="stat">
+                        <span class="stat-value" id="fileCount">0</span>
+                        <span class="stat-label">Toplam Belge</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="alertCount">0</span>
+                        <span class="stat-label">Güvenlik Uyarısı</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <h3>Yeni Belge Yükle</h3>
+                <div class="upload-area">
+                    <input type="file" id="fileInput" style="display: none;">
+                    <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+                        📂 Dosya Seç
+                    </button>
+                    <span id="fileName" class="file-name">Dosya seçilmedi</span>
+                    <button class="btn-submit" onclick="uploadFile()">
+                        🔐 Yükle ve Şifrele
+                    </button>
+                </div>
+                <div id="uploadStatus" class="upload-status"></div>
+            </section>
+
+            <!-- Files and Alerts Grid -->
+            <div class="grid-2col">
+                <!-- Files Section -->
+                <section class="files-section">
+                    <div class="section-header">
+                        <h3>📄 Yüklenen Belgeler</h3>
+                        <span class="encryption-badge">AES-256 Şifreli</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="file-table">
+                            <thead>
+                                <tr>
+                                    <th>Dosya Adı</th>
+                                    <th>Yüklenme Tarihi</th>
+                                    <th>Risk</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fileList">
+                                <tr class="empty-row">
+                                    <td colspan="4">Henüz belge yüklenmedi</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Alerts Section -->
+                <section class="alerts-section">
+                    <div class="section-header">
+                        <h3>⚠️ Güvenlik Uyarıları</h3>
+                        <span class="live-badge">Canlı İzleme</span>
+                    </div>
+                    <div id="alertsList" class="alerts-container">
+                        <div class="empty-alerts">✅ Sistem güvenli görünüyor</div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
