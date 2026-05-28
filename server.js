@@ -14,56 +14,11 @@ connectDB();
 
 // ✅ REGISTER USER
 app.post("/register", async (req, res) => {
-    const { email, password } = req.body;
-
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        await sql.query`
-            INSERT INTO Users (email, password)
-            VALUES (${email}, ${hashedPassword})
-        `;
-
-        res.send("User registered successfully ✅");
-    } catch (err) {
-        res.send("Error ❌ " + err);
-    }
+    res.json({ message: "Cloud demo mode: registration is disabled. Use test@test.com / 123456" });
 });
 
-app.post("/login", async (req, res) => {
-    const { email, password } = req.body;
-
-    try {
-        const result = await sql.query(`
-            SELECT * FROM Users WHERE email = '${email}'
-        `);
-
-        const user = result.recordset[0];
-
-        if (!user) {
-            return res.json({ message: "User not found ❌" }); // ✅ FIX
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            return res.json({ message: "Wrong password ❌" }); // ✅ FIX
-        }
-
-        const token = jwt.sign(
-            { id: user.id, email: user.email },
-            "SECRET_KEY",
-            { expiresIn: "1h" }
-        );
-
-        res.json({
-            message: "Login successful ✅",
-            token: token
-        });
-
-    } catch (err) {
-        res.json({ message: "Error ❌ " + err }); // ✅ FIX
-    }
+app.post("/register", async (req, res) => {
+    res.json({ message: "Cloud demo mode: registration is disabled. Use test@test.com / 123456" });
 });
 
 // 🔐 AUTH MIDDLEWARE
@@ -168,15 +123,13 @@ app.post("/upload-limit", authenticateToken, upload.single("file"), (req, res) =
     res.send("Upload processed ✅");
 });
 app.get("/files", authenticateToken, async (req, res) => {
-    try {
-        const result = await sql.query(`
-            SELECT * FROM Files WHERE user_id = ${req.user.id}
-        `);
-
-        res.json(result.recordset);
-    } catch (err) {
-        res.json([]);
-    }
+    res.json([
+        { filename: "company_policy.pdf.enc" },
+        { filename: "backup_archive.zip.enc" },
+        { filename: "unknown_script.js.enc" },
+        { filename: "employee_report.docx.enc" },
+        { filename: "setup_file.exe.enc" }
+    ]);
 });
 
 // 🚀 START SERVER
