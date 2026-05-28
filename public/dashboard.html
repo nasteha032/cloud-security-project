@@ -1,76 +1,262 @@
-async function loadDashboardStats() {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        window.location.href = "/index.html";
-        return;
-    }
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>CloudSecure DMS | AI-Powered Security Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 2L4 9L16 16L28 9L16 2Z" stroke="url(#grad1)" stroke-width="1.5" fill="none"/>
+                        <path d="M4 16L16 23L28 16" stroke="url(#grad2)" stroke-width="1.5" fill="none"/>
+                        <path d="M4 23L16 30L28 23" stroke="url(#grad3)" stroke-width="1.5" fill="none"/>
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#a855f7"/>
+                                <stop offset="100%" style="stop-color:#3b82f6"/>
+                            </linearGradient>
+                            <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#3b82f6"/>
+                                <stop offset="100%" style="stop-color:#06b6d4"/>
+                            </linearGradient>
+                            <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#06b6d4"/>
+                                <stop offset="100%" style="stop-color:#a855f7"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-main">CloudSecure</span>
+                    <span class="logo-sub">DMS</span>
+                </div>
+            </div>
 
-    const response = await fetch(`${API_URL}/files`, {
-        headers: { "Authorization": `Bearer ${token}` }
-    });
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zm-8 8h6v6H3v-6zm8 0h6v6h-6v-6z"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="files">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M4 2h12v2H4V2zm0 4h12v2H4V6zm0 4h12v2H4v-2zm0 4h8v2H4v-2z"/></svg>
+                    <span>Files</span>
+                </a>
+                <a href="#" class="nav-item" data-page="risk">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L2 18h16L10 2z"/></svg>
+                    <span>Risk Analysis</span>
+                </a>
+                <a href="#" class="nav-item" data-page="threats">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8"/></svg>
+                    <span>Threat Monitoring</span>
+                </a>
+                <a href="#" class="nav-item" data-page="encryption">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><rect x="5" y="8" width="10" height="8" rx="1"/><path d="M7 8V6a3 3 0 1 1 6 0v2"/></svg>
+                    <span>Encryption</span>
+                </a>
+                <a href="#" class="nav-item" data-page="settings">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="3"/><path d="M10 2l1.5 3h3l1 3-2 2 2 2-1 3h-3L10 18l-1.5-3h-3l-1-3 2-2-2-2 1-3h3L10 2z"/></svg>
+                    <span>Settings</span>
+                </a>
+            </nav>
 
-    const files = await response.json();
+            <div class="sidebar-user">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">👤</div>
+                    <div class="user-details">
+                        <span id="userEmail" class="user-email">Loading...</span>
+                        <span class="user-role">Security Admin</span>
+                    </div>
+                </div>
+                <button onclick="logout()" class="logout-btn">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><path d="M7 2v2h4V2H7zm-6 4v10h16V6H1zm8 6v2H7v-2h2z"/></svg>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
 
-    let total = files.length;
-    let high = 0;
-    let medium = 0;
-    let safe = 0;
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Welcome Banner -->
+            <div class="welcome-banner">
+                <div class="banner-glow"></div>
+                <div class="banner-content">
+                    <div class="banner-text">
+                        <h1>Welcome back, <span id="userName">Admin</span> <span class="wave">👋</span></h1>
+                        <p>Cloud Security Monitoring <span class="live-badge">● LIVE</span></p>
+                        <div class="security-status">
+                            <div class="status-indicator active"></div>
+                            <span>System Status: <strong>Secure</strong></span>
+                            <span>Encryption: <strong>AES-256 Active</strong></span>
+                        </div>
+                    </div>
+                    <div class="security-score">
+                        <div class="score-ring">
+                            <svg class="ring-svg" width="100" height="100">
+                                <circle class="ring-bg" cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.1)" stroke-width="6" fill="none"/>
+                                <circle class="ring-progress" cx="50" cy="50" r="42" stroke="url(#scoreGrad)" stroke-width="6" fill="none" stroke-dasharray="264" stroke-dashoffset="53"/>
+                                <defs>
+                                    <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#a855f7"/>
+                                        <stop offset="100%" stop-color="#06b6d4"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="score-text">
+                                <span class="score-value" id="securityScore">95</span>
+                                <span class="score-label">Security Score</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    const recentUploads = document.getElementById("recentUploads");
-    if (recentUploads) recentUploads.innerHTML = "";
+            <!-- Stats Cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card stat-total">
+                    <div class="stat-icon">📁</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalFiles">0</span>
+                        <span class="stat-label">Total Files</span>
+                    </div>
+                    <div class="stat-trend">+12% this week</div>
+                </div>
+                <div class="stat-card stat-high">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="highRiskFiles">0</span>
+                        <span class="stat-label">High Risk Files</span>
+                    </div>
+                    <div class="stat-trend danger">Critical</div>
+                </div>
+                <div class="stat-card stat-medium">
+                    <div class="stat-icon">🟡</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="mediumRiskFiles">0</span>
+                        <span class="stat-label">Medium Risk Files</span>
+                    </div>
+                    <div class="stat-trend warning">Review needed</div>
+                </div>
+                <div class="stat-card stat-safe">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="safeFiles">0</span>
+                        <span class="stat-label">Safe Files</span>
+                    </div>
+                    <div class="stat-trend success">Encrypted</div>
+                </div>
+                <div class="stat-card stat-alerts">
+                    <div class="stat-icon">🚨</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="alertCount">0</span>
+                        <span class="stat-label">Security Alerts</span>
+                    </div>
+                    <div class="stat-trend" id="alertTrend">Real-time</div>
+                </div>
+                <div class="stat-card stat-storage">
+                    <div class="stat-icon">☁️</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="storageUsed">0</span>
+                        <span class="stat-label">Storage Used</span>
+                    </div>
+                    <div class="stat-trend">Cloud</div>
+                </div>
+            </div>
 
-    files.forEach(file => {
-        const filename = file.filename || "Unknown file";
-        const risk = analyzeRisk(filename);
+            <!-- Upload Area -->
+            <div class="upload-card glass-card">
+                <div class="upload-header">
+                    <h3>Secure File Upload</h3>
+                    <span class="encryption-badge">AES-256 Encrypted</span>
+                </div>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">☁️</div>
+                    <p>Drag & Drop your file here or</p>
+                    <button class="btn-upload" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+                    <input type="file" id="fileInput" style="display: none;">
+                    <div id="fileName" class="file-name"></div>
+                    <div id="uploadProgress" class="upload-progress" style="display: none;">
+                        <div class="progress-bar"></div>
+                        <span class="progress-text">Encrypting...</div>
+                    </div>
+                    <div id="uploadStatus" class="upload-status"></div>
+                    <div id="riskResult" class="risk-result"></div>
+                </div>
+            </div>
 
-        if (risk === "HIGH") high++;
-        else if (risk === "MEDIUM") medium++;
-        else safe++;
+            <!-- Two Column Layout -->
+            <div class="two-columns">
+                <!-- Files Table -->
+                <div class="glass-card files-card">
+                    <div class="card-header">
+                        <h3>📄 Recent Files</h3>
+                        <span class="badge-live">Threat Scan Active</span>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Date</th>
+                                    <th>Risk Level</th>
+                                    <th>Encryption</th>
+                                    <th>Threat Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fileList">
+                                <tr class="empty-row"><td colspan="5">No files uploaded yet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-        if (recentUploads) {
-            recentUploads.innerHTML += `
-                <tr>
-                    <td>${escapeHtml(filename)}</td>
-                    <td><span class="risk-${risk.toLowerCase()}">${risk}</span></td>
-                    <td>Encrypted & Stored</td>
-                    <td>🔐 AES-256</td>
-                </tr>
-            `;
-        }
-    });
+                <!-- Threat Monitoring Panel -->
+                <div class="glass-card alerts-card">
+                    <div class="card-header">
+                        <h3>🚨 Threat Monitoring</h3>
+                        <span class="badge-live">Real-time</span>
+                    </div>
+                    <div id="alertsList" class="alerts-list">
+                        <div class="empty-alerts">System secure - No threats detected</div>
+                    </div>
+                </div>
+            </div>
 
-    document.getElementById("totalFiles").textContent = total;
-    document.getElementById("highRisk").textContent = high;
-    document.getElementById("mediumRisk").textContent = medium;
-    document.getElementById("safeFiles").textContent = safe;
+            <!-- Storage Visualization -->
+            <div class="glass-card storage-card">
+                <div class="card-header">
+                    <h3>☁️ Cloud Storage Analytics</h3>
+                    <span class="badge-live">Live</span>
+                </div>
+                <div class="storage-content">
+                    <div class="storage-chart">
+                        <canvas id="storageChart" width="150" height="150"></canvas>
+                    </div>
+                    <div class="storage-details">
+                        <div class="storage-stat">
+                            <span>Used Storage</span>
+                            <strong id="storageUsedDetail">0 MB</strong>
+                        </div>
+                        <div class="storage-stat">
+                            <span>Available</span>
+                            <strong id="storageAvailable">100 MB</strong>
+                        </div>
+                        <div class="storage-progress">
+                            <div class="storage-progress-bar" id="storageProgressBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-    const storagePercent = Math.min(total * 12, 100);
-    document.getElementById("storageFill").style.width = storagePercent + "%";
-    document.getElementById("storageText").textContent = storagePercent + "% used";
-    document.getElementById("storagePercent").textContent = storagePercent + "%";
-
-    const score = Math.max(45, 100 - high * 18 - medium * 8);
-    document.getElementById("threatScore").textContent = score;
-
-    if (total === 0 && recentUploads) {
-        recentUploads.innerHTML = `<tr><td colspan="4">No uploaded files found.</td></tr>`;
-    }
-}
-
-if (window.location.pathname.includes("dashboard.html")) {
-    const token = localStorage.getItem("token");
-    const userEmail = localStorage.getItem("userEmail");
-
-    if (!token) {
-        window.location.href = "/index.html";
-    } else {
-        const emailEl = document.getElementById("userEmail");
-        if (emailEl) emailEl.textContent = userEmail || "Kullanıcı";
-
-        loadDashboardStats();
-
-        setTimeout(() => {
-            addSecurityAlert("🛡️ Cloud security monitoring system activated");
-        }, 700);
-    }
-}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
