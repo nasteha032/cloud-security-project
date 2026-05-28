@@ -17,8 +17,24 @@ app.post("/register", async (req, res) => {
     res.json({ message: "Cloud demo mode: registration is disabled. Use test@test.com / 123456" });
 });
 
-app.post("/register", async (req, res) => {
-    res.json({ message: "Cloud demo mode: registration is disabled. Use test@test.com / 123456" });
+// ✅ LOGIN USER
+app.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    if (email === "test@test.com" && password === "123456") {
+        const token = jwt.sign(
+            { id: 1, email: email },
+            "SECRET_KEY",
+            { expiresIn: "1h" }
+        );
+
+        return res.json({
+            message: "Login successful ✅",
+            token: token
+        });
+    }
+
+    res.json({ message: "Invalid demo login ❌" });
 });
 
 // 🔐 AUTH MIDDLEWARE
