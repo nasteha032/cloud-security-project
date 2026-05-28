@@ -3,7 +3,7 @@ const { connectDB, sql } = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const path = require("path");
-
+const supabase = require("./supabaseClient");
 const app = express();
 app.use(express.json());
 
@@ -14,27 +14,51 @@ connectDB();
 
 // ✅ REGISTER USER
 app.post("/register", async (req, res) => {
-    res.json({ message: "Cloud demo mode: registration is disabled. Use test@test.com / 123456" });
+    const { email, password } = req.body;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const { error } = await supabase
+        .from("users")
+        .insert([{ email, password: hashedPassword }]);
+
+    if (error) {
+        return res.json({ message: "Registration error ❌ " + error.message });
+    }
+
+    res.json({ message: "User registered successfully ✅" });
 });
 
 // ✅ LOGIN USER
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
-    if (email === "test@test.com" && password === "123456") {
-        const token = jwt.sign(
-            { id: 1, email: email },
-            "SECRET_KEY",
-            { expiresIn: "1h" }
-        );
+    const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("email", email)
+        .single();
 
-        return res.json({
-            message: "Login successful ✅",
-            token: token
-        });
+    if (error || !data) {
+        return res.json({ message: "User not found ❌" });
     }
 
-    res.json({ message: "Invalid demo login ❌" });
+    const isMatch = await bcrypt.compare(password, data.password);
+
+    if (!isMatch) {
+        return res.json({ message: "Wrong password ❌" });
+    }
+
+    const token = jwt.sign(
+        { id: data.id, email: data.email },
+        "SECRET_KEY",
+        { expiresIn: "1h" }
+    );
+
+    res.json({
+        message: "Login successful ✅",
+        token
+    });
 });
 
 // 🔐 AUTH MIDDLEWARE
@@ -139,15 +163,16 @@ app.post("/upload-limit", authenticateToken, upload.single("file"), (req, res) =
     res.send("Upload processed ✅");
 });
 app.get("/files", authenticateToken, async (req, res) => {
-    res.json([
-        { filename: "company_policy.pdf.enc" },
-        { filename: "backup_archive.zip.enc" },
-        { filename: "unknown_script.js.enc" },
-        { filename: "employee_report.docx.enc" },
-        { filename: "setup_file.exe.enc" }
-    ]);
-});
+    const { data, error } = await supabase
+        .from("files")
+        .select("*")
+        .eq("user_id", req.user.id)
+        .order("created_at", { ascending: false });
 
+    if (error) return res.json([]);
+
+    res.json(data);
+});
 // 🚀 START SERVER
 const PORT = process.env.PORT || 5000;
 
