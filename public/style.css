@@ -197,6 +197,11 @@ body {
     border-bottom: 1px solid rgba(168, 85, 247, 0.2);
 }
 
+.sidebar-logo .logo-icon {
+    font-size: 28px;
+    margin: 0;
+}
+
 .logo-text {
     display: flex;
     flex-direction: column;
@@ -370,6 +375,16 @@ body {
     color: transparent;
 }
 
+.wave {
+    display: inline-block;
+    animation: wave 1s ease-in-out infinite;
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(20deg); }
+}
+
 .live-badge {
     background: #ef4444;
     padding: 4px 12px;
@@ -409,6 +424,43 @@ body {
 @keyframes pulse-green {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }
+}
+
+/* Security Score */
+.security-score {
+    text-align: center;
+}
+
+.score-ring {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.score-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.score-value {
+    font-size: 28px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a855f7, #06b6d4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.score-label {
+    font-size: 9px;
+    color: #9ca3af;
+}
+
+.ring-progress {
+    transition: stroke-dashoffset 0.5s ease;
 }
 
 /* Stats Grid */
@@ -471,6 +523,10 @@ body {
     background: rgba(255, 255, 255, 0.05);
 }
 
+.stat-trend.danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.stat-trend.warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.stat-trend.success { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+
 /* Glass Card */
 .glass-card {
     background: rgba(15, 15, 35, 0.7);
@@ -492,6 +548,18 @@ body {
     margin-bottom: 24px;
 }
 
+.upload-header h3 {
+    font-size: 18px;
+}
+
+.encryption-badge {
+    background: rgba(168, 85, 247, 0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    color: #a855f7;
+}
+
 .upload-area {
     text-align: center;
     padding: 40px;
@@ -504,6 +572,11 @@ body {
 .upload-area:hover {
     border-color: #a855f7;
     background: rgba(168, 85, 247, 0.05);
+}
+
+.upload-area.drag-over {
+    border-color: #a855f7;
+    background: rgba(168, 85, 247, 0.1);
 }
 
 .upload-icon {
@@ -537,6 +610,19 @@ body {
     align-items: center;
 }
 
+.card-header h3 {
+    font-size: 18px;
+}
+
+.badge-live {
+    background: rgba(239, 68, 68, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 10px;
+    color: #f87171;
+    animation: blink 1s infinite;
+}
+
 .table-wrapper {
     overflow-x: auto;
     padding: 0 24px 24px 24px;
@@ -560,6 +646,12 @@ body {
     padding: 12px 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     font-size: 13px;
+}
+
+.empty-row td {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
 }
 
 .risk-low {
@@ -592,6 +684,21 @@ body {
     display: inline-block;
 }
 
+.encrypted-badge {
+    color: #22c55e;
+    font-size: 11px;
+    margin-left: 6px;
+}
+
+.threat-score {
+    background: rgba(168, 85, 247, 0.2);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+}
+
 /* Alerts List */
 .alerts-list {
     padding: 20px 24px;
@@ -607,6 +714,26 @@ body {
     border-radius: 10px;
     display: flex;
     gap: 12px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.alert-icon {
+    font-size: 18px;
+}
+
+.alert-content {
+    flex: 1;
 }
 
 .alert-message {
@@ -627,53 +754,46 @@ body {
     color: #6b7280;
 }
 
-/* Two Columns */
-.two-columns {
-    display: grid;
-    grid-template-columns: 1fr 0.8fr;
-    gap: 24px;
+/* Storage Card */
+.storage-content {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding: 24px;
+    flex-wrap: wrap;
 }
 
-@media (max-width: 900px) {
-    .two-columns {
-        grid-template-columns: 1fr;
-    }
-    
-    .sidebar {
-        width: 80px;
-    }
-    
-    .sidebar .logo-text,
-    .sidebar .user-details,
-    .sidebar .nav-item span {
-        display: none;
-    }
-    
-    .main-content {
-        margin-left: 80px;
-    }
+.storage-chart {
+    text-align: center;
 }
 
-@media (max-width: 768px) {
-    .main-content {
-        margin-left: 0;
-        padding: 16px;
-    }
-    
-    .sidebar {
-        transform: translateX(-100%);
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .banner-content {
-        flex-direction: column;
-        text-align: center;
-    }
+.storage-details {
+    flex: 1;
 }
 
+.storage-stat {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.storage-progress {
+    margin-top: 16px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.storage-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #a855f7, #06b6d4);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+/* Upload Status */
 .upload-status {
     margin-top: 16px;
     padding: 12px;
@@ -714,16 +834,8 @@ body {
     font-size: 13px;
 }
 
-.encrypted-badge {
-    color: #22c55e;
-    font-size: 11px;
-    margin-left: 6px;
-}
-
 .risk-result {
     margin-top: 16px;
-    padding: 12px;
-    border-radius: 10px;
 }
 
 .risk-scan-result {
@@ -747,10 +859,71 @@ body {
     border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
-.threat-score {
-    background: rgba(168, 85, 247, 0.2);
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
+/* Two Columns */
+.two-columns {
+    display: grid;
+    grid-template-columns: 1fr 0.8fr;
+    gap: 24px;
+}
+
+/* Settings Panel */
+#settingsPanel {
+    margin-bottom: 32px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 80px;
+    }
+    
+    .sidebar .logo-text,
+    .sidebar .user-details,
+    .sidebar .nav-item span {
+        display: none;
+    }
+    
+    .sidebar-nav .nav-item {
+        justify-content: center;
+    }
+    
+    .main-content {
+        margin-left: 80px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .two-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 16px;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .banner-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .security-status {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
 }

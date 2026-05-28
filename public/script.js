@@ -98,11 +98,11 @@ function analyzeRisk(filename) {
     const lowerName = filename.toLowerCase();
     if (lowerName.includes('gizli') || lowerName.includes('confidential') || 
         lowerName.includes('password') || lowerName.includes('secret') ||
-        lowerName.includes('private') || lowerName.includes('kilitli')) {
+        lowerName.includes('private')) {
         return 'HIGH';
     } else if (lowerName.includes('rapor') || lowerName.includes('finans') || 
                lowerName.includes('veri') || lowerName.includes('data') ||
-               lowerName.includes('report') || lowerName.includes('muhasebe')) {
+               lowerName.includes('report')) {
         return 'MEDIUM';
     }
     return 'LOW';
@@ -110,9 +110,9 @@ function analyzeRisk(filename) {
 
 function getThreatScore(riskLevel) {
     switch(riskLevel) {
-        case 'HIGH': return Math.floor(Math.random() * 30) + 70; // 70-100
-        case 'MEDIUM': return Math.floor(Math.random() * 30) + 40; // 40-69
-        default: return Math.floor(Math.random() * 30) + 10; // 10-39
+        case 'HIGH': return Math.floor(Math.random() * 30) + 70;
+        case 'MEDIUM': return Math.floor(Math.random() * 30) + 40;
+        default: return Math.floor(Math.random() * 30) + 10;
     }
 }
 
@@ -128,18 +128,19 @@ async function loadFiles() {
 
         const files = await response.json();
         const fileList = document.getElementById('fileList');
-        const fileCount = document.getElementById('totalFiles');
-        const highRiskCount = document.getElementById('highRiskFiles');
-        const mediumRiskCount = document.getElementById('mediumRiskFiles');
-        const safeCount = document.getElementById('safeFiles');
+        const totalFilesSpan = document.getElementById('totalFiles');
+        const highRiskSpan = document.getElementById('highRiskFiles');
+        const mediumRiskSpan = document.getElementById('mediumRiskFiles');
+        const safeFilesSpan = document.getElementById('safeFiles');
         
         if (!files || files.length === 0) {
             if (fileList) fileList.innerHTML = '<tr class="empty-row"><td colspan="5">Henüz belge yüklenmedi</td></tr>';
-            if (fileCount) fileCount.textContent = '0';
-            if (highRiskCount) highRiskCount.textContent = '0';
-            if (mediumRiskCount) mediumRiskCount.textContent = '0';
-            if (safeCount) safeCount.textContent = '0';
+            if (totalFilesSpan) totalFilesSpan.textContent = '0';
+            if (highRiskSpan) highRiskSpan.textContent = '0';
+            if (mediumRiskSpan) mediumRiskSpan.textContent = '0';
+            if (safeFilesSpan) safeFilesSpan.textContent = '0';
             updateSecurityScore();
+            updateStorageUsage(files);
             return;
         }
 
@@ -170,10 +171,10 @@ async function loadFiles() {
             }).join('');
         }
         
-        if (fileCount) fileCount.textContent = files.length;
-        if (highRiskCount) highRiskCount.textContent = high;
-        if (mediumRiskCount) mediumRiskCount.textContent = medium;
-        if (safeCount) safeCount.textContent = safe;
+        if (totalFilesSpan) totalFilesSpan.textContent = files.length;
+        if (highRiskSpan) highRiskSpan.textContent = high;
+        if (mediumRiskSpan) mediumRiskSpan.textContent = medium;
+        if (safeFilesSpan) safeFilesSpan.textContent = safe;
         
         updateSecurityScore();
         updateStorageUsage(files);
@@ -203,7 +204,6 @@ async function uploadFile() {
     showUploadStatus('Dosya şifreleniyor ve yükleniyor...', 'info');
     if (progressDiv) progressDiv.style.display = 'block';
     
-    // Simulate progress
     let progress = 0;
     const progressInterval = setInterval(() => {
         progress += 10;
@@ -228,12 +228,10 @@ async function uploadFile() {
         
         uploadCounter++;
         
-        // Anomaly Detection
         if (uploadCounter > 3) {
             addSecurityAlert('🚨 ANOMALİ: Çok fazla yükleme tespit edildi! (1 dakikada 3+ dosya)');
         }
 
-        // Risk-based alert
         const risk = analyzeRisk(file.name);
         const threatScore = getThreatScore(risk);
         
@@ -264,7 +262,6 @@ async function uploadFile() {
 
         showUploadStatus('✅ Dosya başarıyla AES-256 ile şifrelendi ve yüklendi!', 'success');
         
-        // Reset upload area
         fileInput.value = '';
         const fileNameSpan = document.getElementById('fileName');
         if (fileNameSpan) fileNameSpan.textContent = 'Dosya seçilmedi';
@@ -273,7 +270,6 @@ async function uploadFile() {
         
         setTimeout(() => {
             if (statusDiv) statusDiv.innerHTML = '';
-            if (riskResultDiv) riskResultDiv.innerHTML = '';
         }, 4000);
         
     } catch (error) {
@@ -305,12 +301,6 @@ function addSecurityAlert(message) {
     
     const alertCountSpan = document.getElementById('alertCount');
     if (alertCountSpan) alertCountSpan.textContent = anomalyAlerts.length;
-    
-    const alertTrend = document.getElementById('alertTrend');
-    if (alertTrend && anomalyAlerts.length > 0) {
-        alertTrend.textContent = `${anomalyAlerts.length} new`;
-        alertTrend.style.color = '#f87171';
-    }
 }
 
 function renderAlerts() {
@@ -357,8 +347,8 @@ function updateSecurityScoreRing() {
 
 // ========== STORAGE MANAGEMENT ==========
 function updateStorageUsage(files) {
-    const totalSize = files ? files.length * 0.5 : 0; // Simulate 0.5MB per file
-    const maxStorage = 100; // 100MB limit
+    const totalSize = files ? files.length * 0.5 : 0;
+    const maxStorage = 100;
     const percentage = (totalSize / maxStorage) * 100;
     
     const storageUsedSpan = document.getElementById('storageUsed');
@@ -371,7 +361,6 @@ function updateStorageUsage(files) {
     if (storageAvailable) storageAvailable.textContent = (maxStorage - totalSize).toFixed(1) + ' MB';
     if (storageProgressBar) storageProgressBar.style.width = percentage + '%';
     
-    // Update storage chart if exists
     if (storageChart) {
         storageChart.data.datasets[0].data = [totalSize, maxStorage - totalSize];
         storageChart.update();
@@ -400,15 +389,131 @@ function initStorageChart() {
     });
 }
 
-// ========== UI HELPER FUNCTIONS ==========
-function escapeHtml(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+// ========== NAVIGATION (FIXED - WORKING SIDEBAR) ==========
+function setupNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    // Get all sections
+    const statsGrid = document.querySelector('.stats-grid');
+    const uploadCard = document.querySelector('.upload-card');
+    const filesCard = document.querySelector('.files-card');
+    const alertsCard = document.querySelector('.alerts-card');
+    const storageCard = document.querySelector('.storage-card');
+    
+    // Remove existing settings panel if any
+    const oldSettings = document.getElementById('settingsPanel');
+    if (oldSettings) oldSettings.remove();
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Remove active class from all
+            navItems.forEach(nav => nav.classList.remove('active'));
+            
+            // Add active class to clicked
+            item.classList.add('active');
+            
+            // Get page name
+            const page = item.getAttribute('data-page');
+            
+            // Hide all sections first
+            if (statsGrid) statsGrid.style.display = 'none';
+            if (uploadCard) uploadCard.style.display = 'none';
+            if (filesCard) filesCard.style.display = 'none';
+            if (alertsCard) alertsCard.style.display = 'none';
+            if (storageCard) storageCard.style.display = 'none';
+            
+            const existingSettings = document.getElementById('settingsPanel');
+            if (existingSettings) existingSettings.style.display = 'none';
+            
+            // Show based on selected page
+            switch(page) {
+                case 'dashboard':
+                    if (statsGrid) statsGrid.style.display = 'grid';
+                    if (uploadCard) uploadCard.style.display = 'block';
+                    if (filesCard) filesCard.style.display = 'block';
+                    if (alertsCard) alertsCard.style.display = 'block';
+                    if (storageCard) storageCard.style.display = 'block';
+                    break;
+                case 'files':
+                    if (filesCard) filesCard.style.display = 'block';
+                    filesCard?.scrollIntoView({ behavior: 'smooth' });
+                    break;
+                case 'risk':
+                    if (filesCard) filesCard.style.display = 'block';
+                    filesCard?.scrollIntoView({ behavior: 'smooth' });
+                    break;
+                case 'threats':
+                    if (alertsCard) alertsCard.style.display = 'block';
+                    alertsCard?.scrollIntoView({ behavior: 'smooth' });
+                    break;
+                case 'encryption':
+                    if (uploadCard) uploadCard.style.display = 'block';
+                    uploadCard?.scrollIntoView({ behavior: 'smooth' });
+                    break;
+                case 'settings':
+                    showSettingsPanel();
+                    break;
+                default:
+                    if (statsGrid) statsGrid.style.display = 'grid';
+                    if (uploadCard) uploadCard.style.display = 'block';
+                    if (filesCard) filesCard.style.display = 'block';
+                    if (alertsCard) alertsCard.style.display = 'block';
+                    if (storageCard) storageCard.style.display = 'block';
+            }
+        });
+    });
 }
 
-// Drag & Drop Upload
+function showSettingsPanel() {
+    let settingsPanel = document.getElementById('settingsPanel');
+    
+    if (!settingsPanel) {
+        settingsPanel = document.createElement('div');
+        settingsPanel.id = 'settingsPanel';
+        settingsPanel.className = 'glass-card';
+        settingsPanel.innerHTML = `
+            <div class="card-header">
+                <h3>⚙️ Ayarlar</h3>
+                <span class="badge-live">Admin</span>
+            </div>
+            <div style="padding: 24px;">
+                <div style="margin-bottom: 24px;">
+                    <h4 style="margin-bottom: 12px; color: #a855f7;">Hesap Güvenliği</h4>
+                    <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; margin-bottom: 12px;">
+                        <p style="margin-bottom: 8px;">🔐 İki Faktörlü Kimlik Doğrulama (2FA)</p>
+                        <button class="btn-upload" style="padding: 8px 16px; font-size: 12px;" onclick="alert('2FA feature coming soon')">Etkinleştir</button>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px;">
+                        <p style="margin-bottom: 8px;">🔑 Şifre Değiştir</p>
+                        <button class="btn-upload" style="padding: 8px 16px; font-size: 12px;" onclick="alert('Password change feature coming soon')">Güncelle</button>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 12px; color: #a855f7;">Şifreleme Ayarları</h4>
+                    <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px;">
+                        <p style="margin-bottom: 8px;">🔒 Aktif Şifreleme: <strong>AES-256-CBC</strong></p>
+                        <p style="font-size: 12px; color: #9ca3af;">Tüm dosyalar AES-256 standardı ile şifrelenmektedir.</p>
+                    </div>
+                </div>
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button onclick="logout()" class="logout-btn" style="width: auto; padding: 10px 24px;">Çıkış Yap</button>
+                </div>
+            </div>
+        `;
+        
+        const alertsCard = document.querySelector('.alerts-card');
+        if (alertsCard && alertsCard.parentNode) {
+            alertsCard.parentNode.insertBefore(settingsPanel, alertsCard.nextSibling);
+        }
+    }
+    
+    settingsPanel.style.display = 'block';
+    settingsPanel.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ========== DRAG & DROP ==========
 function setupDragAndDrop() {
     const uploadArea = document.getElementById('uploadArea');
     if (!uploadArea) return;
@@ -439,75 +544,15 @@ function setupDragAndDrop() {
     });
 }
 
-// Navigation Active State
-function setupNavigation() {
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            navItems.forEach(nav => nav.classList.remove('active'));
-            item.classList.add('active');
-        });
-    });
+// ========== HELPER FUNCTIONS ==========
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
-// Animated counter for stats
-function animateValue(element, start, end, duration) {
-    if (!element) return;
-    const range = end - start;
-    const increment = range / (duration / 16);
-    let current = start;
-    const timer = setInterval(() => {
-        current += increment;
-        if (current >= end) {
-            clearInterval(timer);
-            element.textContent = end;
-        } else {
-            element.textContent = Math.floor(current);
-        }
-    }, 16);
-}
-
-// ========== INITIALIZATION ==========
-if (window.location.pathname.includes('dashboard.html')) {
-    const token = localStorage.getItem('token');
-    const userEmail = localStorage.getItem('userEmail');
-    
-    if (!token) {
-        window.location.href = '/index.html';
-    } else {
-        // Set user info
-        const userNameSpan = document.getElementById('userName');
-        const userEmailSpan = document.getElementById('userEmail');
-        const userAvatar = document.getElementById('userAvatar');
-        
-        if (userEmailSpan) userEmailSpan.textContent = userEmail || 'Kullanıcı';
-        if (userNameSpan) {
-            const name = userEmail ? userEmail.split('@')[0] : 'Admin';
-            userNameSpan.textContent = name.charAt(0).toUpperCase() + name.slice(1);
-        }
-        if (userAvatar) userAvatar.textContent = userEmail ? userEmail.charAt(0).toUpperCase() : '👤';
-        
-        // Initialize components
-        initStorageChart();
-        loadFiles();
-        setupDragAndDrop();
-        setupNavigation();
-        
-        // Welcome alert after 1 second
-        setTimeout(() => {
-            addSecurityAlert('🛡️ CloudSecure DMS Aktif - Güvenlik izleme sistemi çalışıyor');
-            updateSecurityScoreRing();
-        }, 1000);
-        
-        // Auto-refresh every 30 seconds
-        setInterval(() => {
-            loadFiles();
-        }, 30000);
-    }
-}
-
-// File name display on selection
+// ========== FILE NAME DISPLAY ==========
 document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('fileInput');
     if (fileInput) {
@@ -521,3 +566,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ========== INITIALIZATION ==========
+if (window.location.pathname.includes('dashboard.html')) {
+    const token = localStorage.getItem('token');
+    const userEmail = localStorage.getItem('userEmail');
+    
+    if (!token) {
+        window.location.href = '/index.html';
+    } else {
+        const userNameSpan = document.getElementById('userName');
+        const userEmailSpan = document.getElementById('userEmail');
+        const userAvatar = document.getElementById('userAvatar');
+        
+        if (userEmailSpan) userEmailSpan.textContent = userEmail || 'Kullanıcı';
+        if (userNameSpan) {
+            const name = userEmail ? userEmail.split('@')[0] : 'Admin';
+            userNameSpan.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+        }
+        if (userAvatar) userAvatar.textContent = userEmail ? userEmail.charAt(0).toUpperCase() : '👤';
+        
+        initStorageChart();
+        loadFiles();
+        setupDragAndDrop();
+        setupNavigation();
+        
+        setTimeout(() => {
+            addSecurityAlert('🛡️ CloudSecure DMS Aktif - Güvenlik izleme sistemi çalışıyor');
+            updateSecurityScoreRing();
+        }, 1000);
+        
+        setInterval(() => {
+            loadFiles();
+        }, 30000);
+    }
+}
