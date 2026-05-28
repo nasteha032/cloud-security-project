@@ -1,116 +1,76 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akıllı DMS | Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="dashboard">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">📄 <span>Akıllı DMS</span></div>
-                <div class="security-status">
-                    <span class="status-dot active"></span>
-                    Güvenli Bağlantı
-                </div>
-            </div>
+async function loadDashboardStats() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/index.html";
+        return;
+    }
 
-            <div class="user-info">
-                <div class="user-avatar">👤</div>
-                <div class="user-details">
-                    <span id="userEmail" class="user-email">yükleniyor...</span>
-                    <span class="user-role">Kullanıcı</span>
-                </div>
-            </div>
+    const response = await fetch(`${API_URL}/files`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    });
 
-            <nav class="nav-menu">
-                <a href="#" class="nav-item active">
-                    <span>📁</span> Belgelerim
-                </a>
-                <a href="#" class="nav-item">
-                    <span>🛡️</span> Güvenlik
-                </a>
-            </nav>
+    const files = await response.json();
 
-            <button onclick="logout()" class="logout-btn">Çıkış Yap</button>
-        </aside>
+    let total = files.length;
+    let high = 0;
+    let medium = 0;
+    let safe = 0;
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="top-bar">
-                <h2>Belge Yönetim Paneli</h2>
-                <div class="header-stats">
-                    <div class="stat">
-                        <span class="stat-value" id="fileCount">0</span>
-                        <span class="stat-label">Toplam Belge</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-value" id="alertCount">0</span>
-                        <span class="stat-label">Güvenlik Uyarısı</span>
-                    </div>
-                </div>
-            </header>
+    const recentUploads = document.getElementById("recentUploads");
+    if (recentUploads) recentUploads.innerHTML = "";
 
-            <!-- Upload Section -->
-            <section class="upload-section">
-                <h3>Yeni Belge Yükle</h3>
-                <div class="upload-area">
-                    <input type="file" id="fileInput" style="display: none;">
-                    <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
-                        📂 Dosya Seç
-                    </button>
-                    <span id="fileName" class="file-name">Dosya seçilmedi</span>
-                    <button class="btn-submit" onclick="uploadFile()">
-                        🔐 Yükle ve Şifrele
-                    </button>
-                </div>
-                <div id="uploadStatus" class="upload-status"></div>
-            </section>
+    files.forEach(file => {
+        const filename = file.filename || "Unknown file";
+        const risk = analyzeRisk(filename);
 
-            <!-- Files and Alerts Grid -->
-            <div class="grid-2col">
-                <!-- Files Section -->
-                <section class="files-section">
-                    <div class="section-header">
-                        <h3>📄 Yüklenen Belgeler</h3>
-                        <span class="encryption-badge">AES-256 Şifreli</span>
-                    </div>
-                    <div class="table-container">
-                        <table class="file-table">
-                            <thead>
-                                <tr>
-                                    <th>Dosya Adı</th>
-                                    <th>Yüklenme Tarihi</th>
-                                    <th>Risk</th>
-                                    <th>Durum</th>
-                                </tr>
-                            </thead>
-                            <tbody id="fileList">
-                                <tr class="empty-row">
-                                    <td colspan="4">Henüz belge yüklenmedi</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+        if (risk === "HIGH") high++;
+        else if (risk === "MEDIUM") medium++;
+        else safe++;
 
-                <!-- Alerts Section -->
-                <section class="alerts-section">
-                    <div class="section-header">
-                        <h3>⚠️ Güvenlik Uyarıları</h3>
-                        <span class="live-badge">Canlı İzleme</span>
-                    </div>
-                    <div id="alertsList" class="alerts-container">
-                        <div class="empty-alerts">✅ Sistem güvenli görünüyor</div>
-                    </div>
-                </section>
-            </div>
-        </main>
-    </div>
+        if (recentUploads) {
+            recentUploads.innerHTML += `
+                <tr>
+                    <td>${escapeHtml(filename)}</td>
+                    <td><span class="risk-${risk.toLowerCase()}">${risk}</span></td>
+                    <td>Encrypted & Stored</td>
+                    <td>🔐 AES-256</td>
+                </tr>
+            `;
+        }
+    });
 
-    <script src="script.js"></script>
-</body>
-</html>
+    document.getElementById("totalFiles").textContent = total;
+    document.getElementById("highRisk").textContent = high;
+    document.getElementById("mediumRisk").textContent = medium;
+    document.getElementById("safeFiles").textContent = safe;
+
+    const storagePercent = Math.min(total * 12, 100);
+    document.getElementById("storageFill").style.width = storagePercent + "%";
+    document.getElementById("storageText").textContent = storagePercent + "% used";
+    document.getElementById("storagePercent").textContent = storagePercent + "%";
+
+    const score = Math.max(45, 100 - high * 18 - medium * 8);
+    document.getElementById("threatScore").textContent = score;
+
+    if (total === 0 && recentUploads) {
+        recentUploads.innerHTML = `<tr><td colspan="4">No uploaded files found.</td></tr>`;
+    }
+}
+
+if (window.location.pathname.includes("dashboard.html")) {
+    const token = localStorage.getItem("token");
+    const userEmail = localStorage.getItem("userEmail");
+
+    if (!token) {
+        window.location.href = "/index.html";
+    } else {
+        const emailEl = document.getElementById("userEmail");
+        if (emailEl) emailEl.textContent = userEmail || "Kullanıcı";
+
+        loadDashboardStats();
+
+        setTimeout(() => {
+            addSecurityAlert("🛡️ Cloud security monitoring system activated");
+        }, 700);
+    }
+}
