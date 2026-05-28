@@ -111,27 +111,89 @@ app.post("/upload", authenticateToken, upload.single("file"), async (req, res) =
     try {
         const file = req.file;
 
+        if (!file) {
+            return res.json({ message: "No file uploaded ❌" });
+        }
+
+        // 1. Read uploaded file
         const fileData = fs.readFileSync(file.path);
 
+        // 2. Encrypt file
         const cipher = crypto.createCipheriv(algorithm, key, iv);
         let encrypted = cipher.update(fileData);
         encrypted = Buffer.concat([encrypted, cipher.final()]);
 
-        const encryptedPath = file.path + ".enc";
-        fs.writeFileSync(encryptedPath, encrypted);
+        // 3. Basic temporary risk analysis until AI API is added
+        const originalName = file.originalname.toLowerCase();
+        let risk_level = "LOW";
+        let risk_score = 20;
+        let risk_reason = "Safe document type detected";
 
+        if (
+            originalName.includes(".exe") ||
+            originalName.includes(".bat") ||
+            originalName.includes(".js") ||
+            originalName.includes("malware") ||
+            originalName.includes("virus")
+        ) {
+            risk_level = "HIGH";
+            risk_score = 90;
+            risk_reason = "Executable/script or suspicious keyword detected";
+        } else if (
+            originalName.includes(".zip") ||
+            originalName.includes(".rar") ||
+            originalName.includes(".docm")
+        ) {
+            risk_level = "MEDIUM";
+            risk_score = 60;
+            risk_reason = "Compressed or macro-enabled file detected";
+        }
+
+        // 4. Upload encrypted file to Supabase Storage
+        const cloudFilePath = `${req.user.id}/${Date.now()}-${file.originalname}.enc`;
+
+        const { error: uploadError } = await supabase.storage
+            .from("encrypted-files")
+            .upload(cloudFilePath, encrypted, {
+                contentType: "application/octet-stream",
+                upsert: false
+            });
+
+        if (uploadError) {
+            return res.json({ message: "Supabase storage error ❌ " + uploadError.message });
+        }
+
+        // 5. Save file metadata to Supabase database
+        const { error: dbError } = await supabase
+            .from("files")
+            .insert([{
+                user_id: req.user.id,
+                filename: file.originalname + ".enc",
+                file_path: cloudFilePath,
+                risk_level,
+                risk_score,
+                risk_reason,
+                encrypted: true
+            }]);
+
+        if (dbError) {
+            return res.json({ message: "Database save error ❌ " + dbError.message });
+        }
+
+        // 6. Remove temporary local file
         fs.unlinkSync(file.path);
 
-        // ✅ FIX: use real user id
-        await sql.query(`
-            INSERT INTO Files (user_id, filename, filepath)
-            VALUES (${req.user.id}, '${file.filename}.enc', '${encryptedPath}')
-        `);
-
-        res.send("File encrypted & uploaded securely 🔐");
+        // 7. Send analysis result to frontend
+        res.json({
+            message: "File encrypted, analyzed and uploaded to cloud successfully ✅",
+            filename: file.originalname,
+            risk_level,
+            risk_score,
+            risk_reason
+        });
 
     } catch (err) {
-        res.send("Error ❌ " + err);
+        res.json({ message: "Upload error ❌ " + err.message });
     }
 });
 
