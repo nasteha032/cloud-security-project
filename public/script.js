@@ -43,25 +43,28 @@ async function handleLogin() {
         showMessage('Sunucuya bağlanılamadı', 'error');
     }
 }
-
 async function handleRegister() {
-   const email = document.getElementById('regEmail').value;
-   const password = document.getElementById('regPassword').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const confirmPassword = document.getElementById('regPasswordConfirm').value;
 
-    if (!email || !password) {
-        showMessage('Lütfen e-posta ve şifre girin', 'error');
+    if (!email || !password || !confirmPassword) {
+        showMessage('Lütfen tüm alanları doldurun', 'error');
         return;
     }
 
-    // Email validation
     if (!isValidEmail(email)) {
-        showMessage('Geçerli bir e-posta adresi girin (ornek@domain.com)', 'error');
+        showMessage('Geçerli bir e-posta adresi girin', 'error');
         return;
     }
 
-    // Password strength check
     if (!isPasswordStrong(password)) {
-        showMessage('Şifre çok zayıf! En az 8 karakter, büyük/küçük harf ve rakam içermeli', 'error');
+        showMessage('Şifre en az 8 karakter, büyük harf, küçük harf ve rakam içermeli', 'error');
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showMessage('Şifreler eşleşmiyor', 'error');
         return;
     }
 
@@ -73,41 +76,22 @@ async function handleRegister() {
         });
 
         const data = await response.json();
-        
+
         if (data.message && data.message.includes('successfully')) {
             showMessage('Kayıt başarılı! Şimdi giriş yapabilirsiniz', 'success');
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
+
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regPasswordConfirm').value = '';
+
+            setTimeout(() => {
+                showLoginForm();
+            }, 1000);
         } else {
             showMessage(data.message || 'Kayıt başarısız', 'error');
         }
     } catch (error) {
         showMessage('Sunucuya bağlanılamadı', 'error');
-    }
-}
-
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-function isPasswordStrong(password) {
-    if (password.length < 8) return false;
-    if (!/[a-z]/.test(password)) return false;
-    if (!/[A-Z]/.test(password)) return false;
-    if (!/[0-9]/.test(password)) return false;
-    return true;
-}
-
-function showMessage(msg, type) {
-    const messageDiv = document.getElementById('message');
-    if (messageDiv) {
-        messageDiv.textContent = msg;
-        messageDiv.className = `message ${type}`;
-        setTimeout(() => {
-            messageDiv.textContent = '';
-            messageDiv.className = 'message';
-        }, 4000);
     }
 }
 
