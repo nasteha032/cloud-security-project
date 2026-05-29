@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akıllı DMS | Giriş</title>
+    <title>CloudSecure DMS | Giriş</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="auth-wrapper">
         <div class="auth-card">
             <div class="logo-section">
-                <div class="logo-icon">📄</div>
-                <h1>Akıllı DMS</h1>
+                <div class="logo-icon">☁️</div>
+                <h1>CloudSecure <span style="font-size: 14px;">DMS</span></h1>
                 <p>Belge Yönetim Sistemi & Güvenlik İzleme</p>
             </div>
 
@@ -19,24 +19,60 @@
                 <span>🔒 JWT | 🔐 AES-256 | ⚡ Anomali Tespiti</span>
             </div>
 
-            <form id="authForm">
+            <!-- Login Form -->
+            <div id="loginForm">
                 <div class="input-group">
                     <label>E-posta Adresi</label>
-                    <input type="email" id="email" placeholder="ornek@kurum.com" required>
+                    <input type="email" id="loginEmail" placeholder="ornek@kurum.com" required>
+                    <small class="input-error" id="loginEmailError"></small>
                 </div>
 
                 <div class="input-group">
                     <label>Şifre</label>
-                    <input type="password" id="password" placeholder="••••••" required>
+                    <input type="password" id="loginPassword" placeholder="••••••" required>
+                    <small class="input-error" id="loginPasswordError"></small>
                 </div>
 
                 <div class="button-group">
                     <button type="button" class="btn btn-primary" onclick="handleLogin()">Giriş Yap</button>
-                    <button type="button" class="btn btn-secondary" onclick="handleRegister()">Kayıt Ol</button>
+                    <button type="button" class="btn btn-secondary" onclick="showRegisterForm()">Kayıt Ol</button>
+                </div>
+            </div>
+
+            <!-- Register Form (Hidden by default) -->
+            <div id="registerForm" style="display: none;">
+                <div class="input-group">
+                    <label>E-posta Adresi</label>
+                    <input type="email" id="regEmail" placeholder="ornek@kurum.com" required>
+                    <small class="input-error" id="regEmailError"></small>
                 </div>
 
-                <div id="message" class="message"></div>
-            </form>
+                <div class="input-group">
+                    <label>Şifre</label>
+                    <input type="password" id="regPassword" placeholder="••••••" required onkeyup="checkPasswordStrength()">
+                    <small class="input-error" id="regPasswordError"></small>
+                    <div class="password-strength" id="passwordStrength">
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                        <span class="strength-text" id="strengthText">Şifre girin</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Şifre Tekrar</label>
+                    <input type="password" id="regPasswordConfirm" placeholder="••••••" required>
+                    <small class="input-error" id="regConfirmError"></small>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-primary" onclick="handleRegister()" id="registerBtn">Kayıt Ol</button>
+                    <button type="button" class="btn btn-secondary" onclick="showLoginForm()">Geri Dön</button>
+                </div>
+            </div>
+
+            <div id="message" class="message"></div>
 
             <div class="info-text">
                 <small>Demo: test@test.com / 123456</small>

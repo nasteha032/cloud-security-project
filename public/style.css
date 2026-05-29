@@ -926,4 +926,78 @@ body {
         justify-content: center;
         flex-wrap: wrap;
     }
+    /* Password Strength Meter */
+.password-strength {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.strength-bar {
+    width: 60px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.strength-bar.weak {
+    background: #ef4444;
+}
+
+.strength-bar.medium {
+    background: #f59e0b;
+}
+
+.strength-bar.strong {
+    background: #10b981;
+}
+
+.strength-text {
+    font-size: 11px;
+    margin-left: 8px;
+    color: #9ca3af;
+}
+
+.strength-text.weak { color: #ef4444; }
+.strength-text.medium { color: #f59e0b; }
+.strength-text.strong { color: #10b981; }
+
+.input-error {
+    font-size: 11px;
+    color: #ef4444;
+    display: block;
+    margin-top: 4px;
+}
+
+.input-group input.error {
+    border-color: #ef4444;
+}
+
+.input-group input.valid {
+    border-color: #10b981;
+}
+
+/* Loading States */
+.btn-loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.6s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
 }
