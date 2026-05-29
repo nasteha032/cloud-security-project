@@ -184,7 +184,6 @@ async function loadFiles() {
         console.error('Error loading files:', error);
     }
 }
-
 async function uploadFile() {
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
@@ -198,120 +197,124 @@ async function uploadFile() {
         return;
     }
 
+    if (!token) {
+        showUploadStatus('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+        window.location.href = '/index.html';
+        return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
-    showUploadStatus('Dosya şifreleniyor ve yükleniyor...', 'info');
+    showUploadStatus('Dosya şifreleniyor, AI analizi yapılıyor ve buluta yükleniyor...', 'info');
+
     if (progressDiv) progressDiv.style.display = 'block';
-    
+
     let progress = 0;
     const progressInterval = setInterval(() => {
         progress += 10;
+
         const progressBar = document.querySelector('.progress-bar');
         const progressText = document.querySelector('.progress-text');
-        if (progressBar) progressBar.style.width = progress + '%';
-        if (progressText) progressText.textContent = `Şifreleniyor... ${progress}%`;
+
+        if (progressBar) progressBar.style.width = Math.min(progress, 90) + '%';
+        if (progressText) progressText.textContent = `Analiz ediliyor... ${Math.min(progress, 90)}%`;
+
         if (progress >= 90) clearInterval(progressInterval);
     }, 200);
 
     try {
         const response = await fetch(`${API_URL}/upload`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
             body: formData
         });
 
-        const data = await response.text();
-        
+        const data = await response.json();
+
         clearInterval(progressInterval);
-        if (progressDiv) progressDiv.style.display = 'none';
-        
-        uploadCounter++;
-        
-        if (uploadCounter > 3) {
-            addSecurityAlert('🚨 ANOMALİ: Çok fazla yükleme tespit edildi! (1 dakikada 3+ dosya)');
+
+        if (progressDiv) {
+            const progressBar = document.querySelector('.progress-bar');
+            const progressText = document.querySelector('.progress-text');
+
+            if (progressBar) progressBar.style.width = '100%';
+            if (progressText) progressText.textContent = 'Tamamlandı 100%';
+
+            setTimeout(() => {
+                progressDiv.style.display = 'none';
+            }, 800);
         }
 
-        const risk = analyzeRisk(file.name);
-        const threatScore = getThreatScore(risk);
-        
+        if (!response.ok || data.message?.includes('❌')) {
+            showUploadStatus(data.message || 'Yükleme sırasında hata oluştu', 'error');
+            return;
+        }
+
+        const risk = data.risk_level || 'LOW';
+        const threatScore = data.risk_score || 20;
+        const reason = data.risk_reason || 'Risk nedeni belirtilmedi';
+
+        let riskText = 'DÜŞÜK';
+        let riskClass = 'risk-safe';
+        let riskIcon = '✅';
+
+        if (risk === 'HIGH') {
+            riskText = 'YÜKSEK';
+            riskClass = 'risk-danger';
+            riskIcon = '🚨';
+        } else if (risk === 'MEDIUM') {
+            riskText = 'ORTA';
+            riskClass = 'risk-warning';
+            riskIcon = '⚠️';
+        }
+
         if (riskResultDiv) {
             riskResultDiv.innerHTML = `
-                <div class="risk-scan-result ${risk === 'HIGH' ? 'risk-danger' : (risk === 'MEDIUM' ? 'risk-warning' : 'risk-safe')}">
-                    <strong>📊 Risk Analizi Tamamlandı</strong><br>
-                    Risk Seviyesi: <strong>${risk === 'HIGH' ? 'YÜKSEK' : (risk === 'MEDIUM' ? 'ORTA' : 'DÜŞÜK')}</strong><br>
-                    Tehdit Skoru: ${threatScore}/100<br>
-                    ${risk === 'HIGH' ? '⚠️ Bu dosya yüksek riskli olarak işaretlendi!' : '✅ Dosya güvenli olarak işaretlendi'}
+                <div class="risk-scan-result ${riskClass}">
+                    <strong>🤖 AI Güvenlik Analizi Tamamlandı</strong><br><br>
+                    📄 Dosya: <strong>${escapeHtml(data.filename || file.name)}</strong><br>
+                    ${riskIcon} Risk Seviyesi: <strong>${riskText}</strong><br>
+                    📊 Tehdit Skoru: <strong>${threatScore}/100</strong><br>
+                    🧠 Analiz Nedeni: ${escapeHtml(reason)}<br>
+                    🔐 Şifreleme: AES-256<br>
+                    ☁️ Durum: Supabase Cloud Storage içine kaydedildi ✅
                 </div>
             `;
-            setTimeout(() => {
-                riskResultDiv.innerHTML = '';
-            }, 5000);
         }
-        
+
         if (risk === 'HIGH') {
-            addSecurityAlert(`⚠️ YÜKSEK RİSKLİ DOSYA: ${file.name} - Hemen inceleyin!`);
+            addSecurityAlert(`🚨 YÜKSEK RİSK: ${file.name} - ${reason}`);
             updateSecurityScore(-5);
         } else if (risk === 'MEDIUM') {
-            addSecurityAlert(`ℹ️ Orta riskli dosya yüklendi: ${file.name}`);
+            addSecurityAlert(`⚠️ ORTA RİSK: ${file.name} - ${reason}`);
             updateSecurityScore(-2);
         } else {
-            addSecurityAlert(`✅ Düşük riskli dosya yüklendi: ${file.name}`);
+            addSecurityAlert(`✅ DÜŞÜK RİSK: ${file.name} güvenli görünüyor`);
             updateSecurityScore(1);
         }
 
-        showUploadStatus('✅ Dosya başarıyla AES-256 ile şifrelendi ve yüklendi!', 'success');
-        
+        showUploadStatus('✅ Dosya AI tarafından analiz edildi, şifrelendi ve buluta kaydedildi!', 'success');
+
         fileInput.value = '';
+
         const fileNameSpan = document.getElementById('fileName');
         if (fileNameSpan) fileNameSpan.textContent = 'Dosya seçilmedi';
-        
+
         loadFiles();
-        
+
         setTimeout(() => {
             if (statusDiv) statusDiv.innerHTML = '';
         }, 4000);
-        
+
     } catch (error) {
         clearInterval(progressInterval);
         if (progressDiv) progressDiv.style.display = 'none';
         showUploadStatus('❌ Yükleme hatası: ' + error.message, 'error');
     }
 }
-
-function showUploadStatus(msg, type) {
-    const statusDiv = document.getElementById('uploadStatus');
-    if (statusDiv) {
-        statusDiv.textContent = msg;
-        statusDiv.className = `upload-status ${type}`;
-    }
-}
-
-// ========== SECURITY ALERTS ==========
-function addSecurityAlert(message) {
-    const alert = {
-        id: Date.now(),
-        message: message,
-        time: new Date().toLocaleTimeString('tr-TR'),
-        date: new Date().toLocaleDateString('tr-TR')
-    };
-    anomalyAlerts.unshift(alert);
-    if (anomalyAlerts.length > 15) anomalyAlerts.pop();
-    renderAlerts();
-    
-    const alertCountSpan = document.getElementById('alertCount');
-    if (alertCountSpan) alertCountSpan.textContent = anomalyAlerts.length;
-}
-
-function renderAlerts() {
-    const alertsContainer = document.getElementById('alertsList');
-    
-    if (!alertsContainer) return;
-    
-    if (anomalyAlerts.length === 0) {
-        alertsContainer.innerHTML = '<div class="empty-alerts">✅ Sistem güvenli - Tehdit tespit edilmedi</div>';
-        return;
-    }
     
     alertsContainer.innerHTML = anomalyAlerts.map(alert => `
         <div class="alert-item">
@@ -322,7 +325,7 @@ function renderAlerts() {
             </div>
         </div>
     `).join('');
-}
+
 
 // ========== SECURITY SCORE ==========
 function updateSecurityScore(change = 0) {
