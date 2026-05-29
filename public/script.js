@@ -43,57 +43,33 @@ async function handleLogin() {
         showMessage('Sunucuya bağlanılamadı', 'error');
     }
 }
-async function handleRegister() {
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
-    const confirmPassword = document.getElementById('regPasswordConfirm').value;
-
-    if (!email || !password || !confirmPassword) {
-        showMessage('Lütfen tüm alanları doldurun', 'error');
-        return;
-    }
-
-    if (!isValidEmail(email)) {
-        showMessage('Geçerli bir e-posta adresi girin', 'error');
-        return;
-    }
-
-    if (!isPasswordStrong(password)) {
-        showMessage('Şifre en az 8 karakter, büyük harf, küçük harf ve rakam içermeli', 'error');
-        return;
-    }
-
-    if (password !== confirmPassword) {
-        showMessage('Şifreler eşleşmiyor', 'error');
-        return;
-    }
-
+app.post("/register", async (req, res) => {
     try {
-        const response = await fetch(`${API_URL}/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
+        const { email, password } = req.body;
 
-        const data = await response.json();
-
-        if (data.message && data.message.includes('successfully')) {
-            showMessage('Kayıt başarılı! Şimdi giriş yapabilirsiniz', 'success');
-
-            document.getElementById('regEmail').value = '';
-            document.getElementById('regPassword').value = '';
-            document.getElementById('regPasswordConfirm').value = '';
-
-            setTimeout(() => {
-                showLoginForm();
-            }, 1000);
-        } else {
-            showMessage(data.message || 'Kayıt başarısız', 'error');
+        if (!email || !password) {
+            return res.json({ message: "Email and password are required ❌" });
         }
-    } catch (error) {
-        showMessage('Sunucuya bağlanılamadı', 'error');
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const { data, error } = await supabase
+            .from("users")
+            .insert([{ email, password: hashedPassword }])
+            .select();
+
+        if (error) {
+            console.log("REGISTER ERROR:", error.message);
+            return res.json({ message: "Registration error ❌ " + error.message });
+        }
+
+        res.json({ message: "User registered successfully ✅", user: data });
+
+    } catch (err) {
+        console.log("SERVER REGISTER ERROR:", err.message);
+        res.json({ message: "Server error ❌ " + err.message });
     }
-}
+});
 
 function logout() {
     localStorage.removeItem('token');
