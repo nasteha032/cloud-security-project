@@ -1,5 +1,5 @@
 const express = require("express");
-const { connectDB, sql } = require("./db");
+//const { connectDB, sql } = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const path = require("path");
@@ -10,7 +10,7 @@ app.use(express.json());
 // ✅ SERVE FRONTEND
 app.use(express.static(path.join(__dirname, "public")));
 
-connectDB();
+//connectDB();
 
 // ✅ REGISTER USER
 app.post("/register", async (req, res) => {

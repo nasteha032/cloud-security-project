@@ -7,9 +7,8 @@ let storageChart = null;
 
 // ========== AUTHENTICATION ==========
 async function handleLogin() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
     if (!email || !password) {
         showMessage('Lütfen e-posta ve şifre girin', 'error');
         return;
@@ -46,8 +45,8 @@ async function handleLogin() {
 }
 
 async function handleRegister() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+   const email = document.getElementById('regEmail').value;
+   const password = document.getElementById('regPassword').value;
 
     if (!email || !password) {
         showMessage('Lütfen e-posta ve şifre girin', 'error');
